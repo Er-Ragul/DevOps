@@ -1,0 +1,29 @@
+---
+# PVC for Library
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nfs-pvc-lib
+spec:
+  storageClassName: nfs-pv-lib
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 2Gi
+  volumeName: nfs-pv-lib
+
+---
+# PVC for Library
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nfs-pvc-db
+spec:
+  storageClassName: nfs-pv-db
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 2Gi
+  volumeName: nfs-pv-db

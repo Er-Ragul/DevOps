@@ -1,0 +1,35 @@
+---
+# PV for Library
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nfs-pv-lib
+spec:
+  capacity:
+    storage: 2Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany
+  storageClassName: nfs-pv-lib
+  nfs:
+    path: /storage
+    server: <YOUR-NFS-SERVER-IP>
+  persistentVolumeReclaimPolicy: Retain
+
+---
+# PV for Realmdb
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nfs-pv-db
+spec:
+  capacity:
+    storage: 2Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany
+  storageClassName: nfs-pv-db
+  nfs:
+    path: /realmdb
+    server: <YOUR-NFS-SERVER-IP>
+  persistentVolumeReclaimPolicy: Retain

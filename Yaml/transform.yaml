@@ -1,0 +1,44 @@
+---
+# Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: transform-deployment
+  labels:
+    app: transform
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: transform
+  template:
+    metadata:
+      labels:
+        app: transform
+    spec:
+      containers:
+        - name: transform-server
+          image: <YOUR-REGISTRY>/transform:v1
+          ports:
+            - containerPort: 8000
+          volumeMounts:
+            - name: nfs-pvc-volume-1
+              mountPath: /streamer/library
+      volumes:
+        - name: nfs-pvc-volume-1
+          persistentVolumeClaim:
+            claimName: nfs-pvc-lib
+
+---
+# Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: transform-service
+spec:
+  type: ClusterIP
+  selector:
+    app: transform
+  ports:
+    - port: 8000
+      targetPort: 8000
