@@ -1,0 +1,25 @@
+name: Exchange Server Build
+
+on:
+  push:
+    branches:
+      - exchange
+
+jobs:
+  build:
+    runs-on: self-hosted
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Build docker image
+      run: docker build -t 192.168.209.128:8000/exchange:v2 .
+
+    - name: Push docker image to local registry
+      run: docker push 192.168.209.128:8000/exchange:v2
+
+    - name: Run the exchange server
+      run: docker run --name stream -itd -p 3002:3002 192.168.209.128:8000/exchange:v2
+
+    - name: Acknowledge
+      run: echo "Exchange server docker image build successful."
