@@ -61,8 +61,10 @@ app.post('/upload', upload.single('file'), (req, res) => {
       console.log('Failed to store data', e)
     })
   
-//axios.get(`${ENDPOINT}/transform/${name}`)
-axios.get(`http://${ENDPOINT}/transform/${req._uid.toString()}.${name.split('.')[1]}`)
+  //res.status(200).json({status: 'success', message: 'File uploaded successfully 😁'});
+  //axios.get(`${ENDPOINT}/transform/${name}`)
+
+  axios.get(`http://${ENDPOINT}/transform/${req._uid.toString()}.${name.split('.')[1]}`)
   .then(response => {
     res.status(200).json({status: 'success', message: 'File uploaded successfully 😁'});
   })
@@ -80,6 +82,26 @@ app.get('/read', (req, res) => {
   .catch(error => {
       res.send('Data read failed')
   })
+})
+
+app.post('/delete', (req, res) => {
+  try{
+    Realm.open(realmConfig)
+    .then(realm => {
+        realm.write(() => {
+            const toDelete = realm.objects('exchange').filtered(`uid = "${req.body.uid}"`);
+            realm.delete(toDelete);
+            res.status(200).json({status: "success", message: "File deleted successfully"})
+        })
+    })
+    .catch(error => {
+        console.log(error);
+        res.send('Failed to delete the entry')
+    })
+  }
+  catch(e){
+      res.send('Failed to delet the file.')
+  }
 })
 
 app.listen(3002, () => console.log(`Storage Server is running on port 3002`))

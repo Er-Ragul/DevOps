@@ -2,15 +2,20 @@ import React, { useRef, useEffect, useState } from 'react'
 import 'bulma/css/bulma.min.css'
 import './Landing.css'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faUpload, faSearch, faPlay, faTrash, faPencil } from '@fortawesome/free-solid-svg-icons'
+import { faUpload, faSearch, faPlay, faTrash, faPencil, faCheck } from '@fortawesome/free-solid-svg-icons'
 import axios from 'axios'
 
-let ENDPOINT = '192.168.209.129'
+//let ENDPOINT = '192.168.209.129'
+let ENDPOINT = '192.168.0.213:3002'
 
 export default function Landing() {
 
   let clickRef = useRef(null)
   let [media, setMedia] = useState([])
+  let [edit, setEdit] = useState({
+    name: '',
+    hide: true
+  })
 
   useEffect(() => {
     readData()
@@ -42,19 +47,32 @@ export default function Landing() {
         }
       });
       console.log(response.data);
+      readData()
     } catch (error) {
       console.error('Error uploading file:', error);
     }
   } 
 
   /* To get list of data */
-  async function readData() {
+  async function readData(){
     try{
       let response = await axios.get(`http://${ENDPOINT}/read`)
       setMedia(response.data)
     }
     catch(err){
       console.log('Unable to get data: ', err);
+    }
+  }
+
+  /* To delete data */
+  async function deleteData(uid){
+    try{
+      let response = await axios.post(`http://${ENDPOINT}/delete`, {uid: uid.toString()})
+      console.log(response.data);
+      readData()
+    }
+    catch(err){
+      console.log('Something went wrong: ', err);
     }
   }
 
@@ -125,19 +143,25 @@ export default function Landing() {
                     </div>
                     <div className="card-content">
                       <div className="content">
-                        <p className="title is-6">{item.name}</p>
+                        <p className={`title is-6 ${!edit.hide ? 'is-hidden' : !edit.hide}`}>{item.name}</p>
+                        <div className={`${edit.hide ? 'is-hidden' : 'is-flex my-2'}`}>
+                          <input className="input is-small is-info" type="text" placeholder="Rename" value={edit.name} onChange={(e) => setEdit(old => ({...old, name: e.target.value}))}/>
+                          <button className="button is-info mx-2" onClick={(e) => setEdit(old => ({...old, hide: !edit.hide}))}>
+                            <FontAwesomeIcon icon={faCheck} size="1x" />
+                          </button>
+                        </div>
                         <div className="is-flex is-justify-content-space-around">
                           <button className="button">
                             <span class="icon">
                               <FontAwesomeIcon icon={faPlay} size="1x" />
                             </span>
                           </button>
-                          <button className="button">
+                          <button className="button" onClick={(e) => setEdit({name: item.name, hide: !edit.hide})}>
                             <span class="icon">
                               <FontAwesomeIcon icon={faPencil} size="1x" />
                             </span>
                           </button>
-                          <button className="button">
+                          <button className="button" onClick={() => deleteData(item.uid)}>
                             <span class="icon">
                               <FontAwesomeIcon icon={faTrash} size="1x" />
                             </span>
