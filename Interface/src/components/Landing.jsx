@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState } from 'react'
 import 'bulma/css/bulma.min.css'
 import './Landing.css'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faUpload, faSearch, faPlay, faTrash, faPencil, faCheck } from '@fortawesome/free-solid-svg-icons'
+import { faUpload, faSearch, faPlay, faTrash, faPencil, faCheck, faXmark, faL } from '@fortawesome/free-solid-svg-icons'
 import axios from 'axios'
 
 //let ENDPOINT = '192.168.209.129'
@@ -16,7 +16,11 @@ export default function Landing() {
     name: '',
     hide: true
   })
-
+  let [player, setPlayer] = useState({
+    play: false,
+    uid: null
+  })
+  
   useEffect(() => {
     readData()
   }, [])
@@ -76,6 +80,19 @@ export default function Landing() {
     }
   }
 
+  /* To rename the data */
+  async function renameData(item) {
+    try{
+      let response = await axios.post(`http://${ENDPOINT}/update`, {uid: item.uid.toString(), name: edit.name})
+      console.log(response.data);
+      readData()
+    }
+    catch(err){
+      console.log('Something went wrong: ', err);
+    }
+    setEdit(old => ({...old, hide: !edit.hide}))
+  }
+
   return (
     <div className="app">
       <nav className="navbar is-dark" role="navigation" aria-label="main navigation">
@@ -123,6 +140,22 @@ export default function Landing() {
         </div>
       </section>
 
+      {
+        player.play ?
+        <section style={{ position: 'relative' }}>
+          <button className="button close-button is-danger is-light" onClick={() => setPlayer({play: false, uid: null})}>
+            <span className="icon mr-1">
+              <FontAwesomeIcon icon={faXmark} />
+            </span>
+            Close
+          </button>
+          <video controls autoPlay={true} width="100%">
+            <source src={`http://${ENDPOINT}/player?id=${player.uid}`} type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+        </section>:null
+      }
+
       <section className="section">
         <div className="container">
           {/* <h2 className="title is-4">Trending Now</h2> */}
@@ -131,7 +164,7 @@ export default function Landing() {
               media.map((item, i) => (
                 <div key={item} className="column is-2-desktop is-3-tablet is-6-mobile">
                   <div className="card">
-                    <div className="card-image">
+                    <div className="card-image" onClick={() => setPlayer({play: !player.play, uid: item.uid})}>
                       <figure className="image is-3by4 has-play-button">
                         <img src={`https://picsum.photos/300/400?random=${i}`} alt="Placeholder image" />
                         <div className="play-button-overlay">
@@ -143,19 +176,21 @@ export default function Landing() {
                     </div>
                     <div className="card-content">
                       <div className="content">
-                        <p className={`title is-6 ${!edit.hide ? 'is-hidden' : !edit.hide}`}>{item.name}</p>
+                        <p className={`title has-text-centered is-6 ${!edit.hide ? 'is-hidden' : !edit.hide}`}>{item.name}</p>
                         <div className={`${edit.hide ? 'is-hidden' : 'is-flex my-2'}`}>
                           <input className="input is-small is-info" type="text" placeholder="Rename" value={edit.name} onChange={(e) => setEdit(old => ({...old, name: e.target.value}))}/>
-                          <button className="button is-info mx-2" onClick={(e) => setEdit(old => ({...old, hide: !edit.hide}))}>
+                          <button className="button is-info mx-2" onClick={(e) => renameData(item)}>
                             <FontAwesomeIcon icon={faCheck} size="1x" />
                           </button>
                         </div>
                         <div className="is-flex is-justify-content-space-around">
-                          <button className="button">
+                          {/*
+                          <button className="button" onClick={() => setPlayer({play: !player.play, uid: item.uid})}>
                             <span class="icon">
                               <FontAwesomeIcon icon={faPlay} size="1x" />
                             </span>
                           </button>
+                          */}
                           <button className="button" onClick={(e) => setEdit({name: item.name, hide: !edit.hide})}>
                             <span class="icon">
                               <FontAwesomeIcon icon={faPencil} size="1x" />
